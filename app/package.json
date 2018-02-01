@@ -1,0 +1,19 @@
+{
+  "name": "QuickFIV",
+  "version": "0.1.0",
+  "description": "QuickFIV application built with Electron",
+  "author": {
+    "name": "Ali Nauman",
+    "email": ""
+  },
+  "license": "MIT",
+  "main": "javascripts/main/index.js",
+  "dependencies": {},
+  "settings": {
+    "width": 680,
+    "height": 400,
+    "reload": true,
+    "devTools": true,
+    "icon": ".ico"
+  }
+}

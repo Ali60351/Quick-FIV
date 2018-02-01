@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>QuickFIV</title>
+  <link rel="stylesheet" href="stylesheets/application.css" />
+  <link rel="stylesheet" href="stylesheets/pure-min.css" />
+</head>
+
+<body>
+  <div id="app">
+    <div id="header">
+      <p>QuickFIV</p>
+    </div>
+    <div id="FSelect">
+      <form class="pure-form">
+              <input type="text" v-bind:placeholder="selectedDir" disabled>
+              <a class="pure-button" v-on:click="selectDir" href="#">Select</a>
+      </form>
+    </div>
+    <div id="queue">
+      <table class="pure-table">
+        <thead>
+          <tr>
+            <th>Filename</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in queue">
+            <td> {{item.name}} </td>
+            <td> {{item.status}} </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script src="javascripts/vue.js" type="text/javascript"></script>
+  <script src="javascripts/app.js" type="text/javascript"></script>
+</body>
+
+</html>
