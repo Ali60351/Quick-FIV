@@ -7,8 +7,8 @@
     "postinstall": "install-app-deps"
   },
   "devDependencies": {
+    "electron": "1.7.11",
     "electron-builder": "19.48.2",
-    "electron": "1.7.9",
     "gulp": "^3.9.1",
     "mocha": "^4.0.1",
     "spectron": "^3.7.2",
@@ -16,8 +16,7 @@
   },
   "build": {
     "appId": "com.electron.quickfiv",
-    "win": {
-    },
+    "win": {},
     "mac": {
       "category": "your.app.category.type"
     }
