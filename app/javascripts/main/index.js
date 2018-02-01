@@ -13,7 +13,8 @@ electron.app.on('ready', function() {
     width: 600,
     height: 700,
     minHeight: 700,
-    minWidth: 600
+    minWidth: 600,
+    icon: __dirname + '\\icon.ico'
   });
 
   window.loadURL('file://' + path.join(__dirname, '..', '..') + '/index.html');
@@ -33,8 +34,8 @@ electron.app.on('ready', function() {
 
 });
 
-electron.app.on('ready', () => {
-  if (process.env.NODE_ENV !== 'production') {
-    require('vue-devtools').install()
-  }
-})
+// electron.app.on('ready', () => {
+//   if (process.env.NODE_ENV !== 'production') {
+//     require('vue-devtools').install()
+//   }
+// })
