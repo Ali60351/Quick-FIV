@@ -83,3 +83,56 @@ body {
 #queue td {
   border-color: #555;
 }
+
+.swal-modal {
+  background-color: rgba(47, 104, 141, 0.9);
+  border: none;
+}
+
+.swal-title {
+  margin: 0px;
+  font-size: 16px;
+  box-shadow: none;
+  margin-bottom: 28px;
+  color: #EEE;
+}
+
+.swal-text {
+  padding: 17px;
+  display: block;
+  margin: 22px;
+  text-align: center;
+  color: #EEE;
+}
+
+.swal-footer {
+  background-color: #7DB8DE;
+  margin-top: 32px;
+  border-top: 1px solid #E9EEF1;
+  overflow: hidden;
+}
+
+.swal-button {
+  padding: 7px 19px;
+  border-radius: 2px;
+  background-color: #2F688D;
+  font-size: 12px;
+  border: 1px solid #2F688D;
+  text-shadow: 0px -1px 0px rgba(0, 0, 0, 0.3);
+}
+
+.swal-icon--success__hide-corners {
+  background-color: rgba(47, 104, 141, 0);
+}
+
+.swal-icon--success:after, .swal-icon--success:before {
+  background-color: rgba(47, 104, 141, 0);
+}
+
+.swal-icon--warning__hide-corners {
+  background-color: rgba(47, 104, 141, 0);
+}
+
+.swal-icon--warning:after, .swal-icon--warning:before {
+  background-color: rgba(47, 104, 141, 0);
+}

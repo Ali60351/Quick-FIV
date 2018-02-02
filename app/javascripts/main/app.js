@@ -6,6 +6,7 @@ var path = require('path');
 var hashFiles = require('hash-files');
 var jsonfile = require('jsonfile');
 var file = require('file');
+var swal = require('sweetalert');
 
 const {
     dialog
@@ -15,7 +16,8 @@ var app = new Vue({
     el: '#app',
     data: {
         queue: [],
-        selectedDir: 'Select Directory'
+        selectedDir: 'Select Directory',
+        mode: ''
     },
     methods: {
         selectDir: function () {
@@ -27,7 +29,23 @@ var app = new Vue({
                 properties: ["openDirectory"]
             });
 
+            if (this.selectedDir[0] == null) {
+                return;
+            }
+
             this.selectedDir = dir[0];
+
+            if (fs.existsSync(path.resolve(app.selectedDir, 'QuickFIV.json'))) {
+                mode = 'Verify';
+                swal('QuickFIV hash exists. Starting verification. Please Wait.', {
+                    button: false
+                });
+            } else {
+                mode = 'Generate';
+                swal('QuickFIV hash does not exists. Starting hash Generation. Please Wait', {
+                    button: false
+                });
+            }
 
             var files = getFiles(this.selectedDir);
 
@@ -35,13 +53,23 @@ var app = new Vue({
                 this.queue.push({
                     name: files[i].split(this.selectedDir)[1],
                     status: 'pending',
-                    path: files[i]
+                    path: files[i],
+                    md5: '',
+                    sha1: '',
+                    sha256: '',
+                    sha512: ''
                 });
             }
 
             setTimeout(function () {
                 var hashArr = getHashes(app.queue);
-                saveJSON(hashArr, path.resolve(app.selectedDir, 'QuickFIV.json'));
+
+                if (mode == 'Generate') {
+                    saveJSON(hashArr, path.resolve(app.selectedDir, 'QuickFIV.json'));
+                } else {
+                    var verifyArr = readJSON(path.resolve(app.selectedDir, 'QuickFIV.json'));
+                    verifyHashes(verifyArr);
+                }
             }, 100);
         }
     }
@@ -62,7 +90,7 @@ function getFiles(selection) {
         for (var j = 0; j < files.length; j++) {
             var location = path.resolve(directories[i], files[j]);
 
-            if (fs.lstatSync(location).isFile()) {
+            if (fs.lstatSync(location).isFile() && files[j] != 'QuickFIV.json') {
                 filepaths.push(location);
             }
         }
@@ -110,6 +138,10 @@ function getHashes(queue) {
         });
 
         queue[i].status = 'done';
+        queue[i].md5 = md5;
+        queue[i].sha1 = sha1;
+        queue[i].sha256 = sha256;
+        queue[i].sha512 = sha512;
     }
 
     return hashes;
@@ -117,13 +149,72 @@ function getHashes(queue) {
 
 function saveJSON(hashArr, location) {
     fs.writeFileSync(location);
-    jsonfile.writeFileSync(location, hashArr, { spaces: 2 });
+    jsonfile.writeFileSync(location, hashArr, {
+        spaces: 2
+    });
 }
 
-// var arr = getFiles('D:\\Music\\C91\\Ambient\\Moon-Tone - Downtime Sessions - Toho Ambient');
-// var arr2 = getHashes(arr);
-// console.log(arr2);
+function readJSON(location) {
+    var arr = jsonfile.readFileSync(location);
+    return arr;
+}
 
-// var file = 'data.json';
-// fs.writeFileSync(file);
-// jsonfile.writeFileSync(file, arr2, {spaces: 2});
+function verifyHashes(arr) {
+    var perfectFlag = true;
+
+    for (var i = 0; i < app.queue.length; i++) {
+        var index = -1;
+
+        for (var j = 0; j < arr.length && index == -1; j++) {
+            if (app.queue[i].name == arr[j].file) {
+                index = j;
+            }
+        }
+
+        if (index == -1) {
+            app.queue[i].status = 'Error';
+            perfectFlag = false;
+        } else {
+            var integrityFlag = true;
+
+            if (app.queue[i].md5 != arr[index].md5) {
+                integrityFlag = false;
+            }
+
+            if (app.queue[i].sha1 != arr[index].sha1) {
+                integrityFlag = false;
+            }
+
+            if (app.queue[i].sha256 != arr[index].sha256) {
+                integrityFlag = false;
+            }
+
+            if (app.queue[i].sha512 != arr[index].sha512) {
+                integrityFlag = false;
+            }
+
+            if (integrityFlag) {
+                app.queue[i].status = 'OK';
+            } else {
+                app.queue[i].status = 'Corrupted';
+                perfectFlag = false;
+            }
+        }
+    }
+
+    swal.close();
+
+    if (perfectFlag) {
+        swal({
+            text: 'All files OK!',
+            button: false,
+            icon: 'success'
+        });
+    } else {
+        swal({
+            text: 'Issue(s) detected!',
+            button: false,
+            icon: 'warning'
+        });
+    }
+}
