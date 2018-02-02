@@ -31,6 +31,8 @@ var app = new Vue({
 
             if (this.selectedDir[0] == null) {
                 return;
+            } else {
+                this.queue = [];
             }
 
             this.selectedDir = dir[0];
@@ -66,6 +68,12 @@ var app = new Vue({
 
                 if (mode == 'Generate') {
                     saveJSON(hashArr, path.resolve(app.selectedDir, 'QuickFIV.json'));
+                    swal.close();
+                    swal({
+                        text: 'QuickFIV file created!',
+                        button: false,
+                        icon: 'success'
+                    });
                 } else {
                     var verifyArr = readJSON(path.resolve(app.selectedDir, 'QuickFIV.json'));
                     verifyHashes(verifyArr);
