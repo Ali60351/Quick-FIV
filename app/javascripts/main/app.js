@@ -17,7 +17,8 @@ var app = new Vue({
     data: {
         queue: [],
         selectedDir: 'Select Directory',
-        mode: ''
+        mode: '',
+        checkedHashes: ['sha1']
     },
     methods: {
         selectDir: function () {
@@ -150,7 +151,7 @@ function getHashes(queue) {
             sha512: sha512
         });
 
-        queue[i].status = 'done';
+        queue[i].status = 'hashed';
         queue[i].md5 = md5;
         queue[i].sha1 = sha1;
         queue[i].sha256 = sha256;
@@ -207,7 +208,7 @@ function verifyHashes(arr) {
             }
 
             if (integrityFlag) {
-                app.queue[i].status = 'OK';
+                app.queue[i].status = 'Verified';
             } else {
                 app.queue[i].status = 'Corrupted';
                 perfectFlag = false;

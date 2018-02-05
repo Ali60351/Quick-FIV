@@ -15,8 +15,8 @@
     </div>
     <div id="FSelect">
       <form class="pure-form">
-              <input type="text" v-bind:placeholder="selectedDir" disabled>
-              <a class="pure-button" v-on:click="selectDir" href="#">Select</a>
+        <input type="text" v-bind:placeholder="selectedDir" disabled>
+        <a class="pure-button" v-on:click="selectDir" href="#">Select</a>
       </form>
     </div>
     <div id="queue">
@@ -34,6 +34,24 @@
           </tr>
         </tbody>
       </table>
+    </div>
+    <div id="footer" class="pure-g">
+      <div class="pure-u-1-4">
+        <input type="checkbox" id="md5" value="md5" v-model="checkedHashes">
+        <label for="md5">md5</label>
+      </div>
+      <div class="pure-u-1-4">
+        <input type="checkbox" id="sha1" value="sha1" v-model="checkedHashes">
+        <label for="sha1">sha1</label>
+      </div>
+      <div class="pure-u-1-4">
+        <input type="checkbox" id="sha256" value="sha256" v-model="checkedHashes">
+        <label for="sha256">sha256</label>
+      </div>
+      <div class="pure-u-1-4">
+        <input type="checkbox" id="sha512" value="sha512" v-model="checkedHashes">
+        <label for="sha512">sha512</label>
+      </div>
     </div>
   </div>
   <script src="javascripts/main/vue.js" type="text/javascript"></script>
