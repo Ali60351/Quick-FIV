@@ -6,7 +6,7 @@ var path = require('path');
 var hashFiles = require('hash-files');
 var jsonfile = require('jsonfile');
 var file = require('file');
-var swal = require('sweetalert');
+var swal = require('sweetalert2');
 
 const {
     dialog
@@ -29,7 +29,7 @@ var app = new Vue({
                 properties: ["openDirectory"]
             });
 
-            if (this.selectedDir[0] == null) {
+            if (dir == null) {
                 return;
             } else {
                 this.queue = [];
@@ -39,13 +39,17 @@ var app = new Vue({
 
             if (fs.existsSync(path.resolve(app.selectedDir, 'QuickFIV.json'))) {
                 mode = 'Verify';
-                swal('QuickFIV hash exists. Starting verification. Please Wait.', {
-                    button: false
+                swal({
+                    showConfirmButton: false,
+                    text: 'QuickFIV hash exists. Starting verification. Please Wait.',
+                    customClass: 'swal2-modal-custom'
                 });
             } else {
                 mode = 'Generate';
-                swal('QuickFIV hash does not exists. Starting hash Generation. Please Wait', {
-                    button: false
+                swal({
+                    showConfirmButton: false,
+                    text: 'QuickFIV hash does not exists. Starting hash Generation. Please Wait',
+                    customClass: 'swal2-modal-custom'
                 });
             }
 
@@ -70,9 +74,10 @@ var app = new Vue({
                     saveJSON(hashArr, path.resolve(app.selectedDir, 'QuickFIV.json'));
                     swal.close();
                     swal({
+                        type: 'success',
+                        showConfirmButton: false,
                         text: 'QuickFIV file created!',
-                        button: false,
-                        icon: 'success'
+                        customClass: 'swal2-modal-custom'
                     });
                 } else {
                     var verifyArr = readJSON(path.resolve(app.selectedDir, 'QuickFIV.json'));
@@ -214,15 +219,15 @@ function verifyHashes(arr) {
 
     if (perfectFlag) {
         swal({
-            text: 'All files OK!',
-            button: false,
-            icon: 'success'
+            showConfirmButton: false,
+            type: 'success',
+            footer: '<p style="color: #333">All files OK!</p>'
         });
     } else {
         swal({
-            text: 'Issue(s) detected!',
-            button: false,
-            icon: 'warning'
+            showConfirmButton: false,
+            type: 'warning',
+            footer: '<p style="color: #333">Issue(s) detected!</p>'
         });
     }
 }

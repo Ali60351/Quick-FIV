@@ -27,7 +27,7 @@
     "global": "^4.3.2",
     "hash-files": "^1.1.1",
     "jsonfile": "^4.0.0",
-    "sweetalert": "^2.1.0",
+    "sweetalert2": "^7.9.2",
     "vue-devtools": "^3.1.9"
   }
 }

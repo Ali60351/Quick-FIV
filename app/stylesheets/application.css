@@ -84,28 +84,35 @@ body {
   border-color: #555;
 }
 
-.swal-modal {
-  background-color: rgba(47, 104, 141, 0.9);
-  border: none;
+.swal2-modal-custom {
+  background-color: rgba(47, 104, 141, 0.9) !important;
 }
 
-.swal-title {
+/* .swal2-footer {
+  background-color: rgba(47, 104, 141, 0.9) !important;
+} */
+
+.swal2-content {
+  color: #EEE !important;
+}
+
+/* .swal-title {
   margin: 0px;
   font-size: 16px;
   box-shadow: none;
   margin-bottom: 28px;
   color: #EEE;
-}
+} */
 
-.swal-text {
+/* .swal-text {
   padding: 17px;
   display: block;
   margin: 22px;
   text-align: center;
   color: #EEE;
-}
+} */
 
-.swal-footer {
+/* .swal-footer {
   background-color: #7DB8DE;
   margin-top: 32px;
   border-top: 1px solid #E9EEF1;
@@ -135,4 +142,8 @@ body {
 
 .swal-icon--warning:after, .swal-icon--warning:before {
   background-color: rgba(47, 104, 141, 0);
-}
+} */
+
+/* .swal2-success-circular-line-left .swal2-success-circular-line-right .swal2-success-fix {
+  display: none !important;
+} */
