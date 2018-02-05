@@ -42,6 +42,7 @@ var app = new Vue({
                 mode = 'Verify';
                 swal({
                     showConfirmButton: false,
+                    animation: false,
                     text: 'QuickFIV hash exists. Starting verification. Please Wait.',
                     customClass: 'swal2-modal-custom'
                 });
@@ -49,6 +50,7 @@ var app = new Vue({
                 mode = 'Generate';
                 swal({
                     showConfirmButton: false,
+                    animation: false,
                     text: 'QuickFIV hash does not exists. Starting hash Generation. Please Wait',
                     customClass: 'swal2-modal-custom'
                 });
