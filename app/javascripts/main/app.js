@@ -18,7 +18,13 @@ var app = new Vue({
         queue: [],
         selectedDir: 'Select Directory',
         mode: '',
-        checkedHashes: ['sha1']
+        checkedHashes: ['sha1'],
+        algorithms: {
+            md5: false,
+            sha1: false,
+            sha256: false,
+            sha512: false
+        }
     },
     methods: {
         selectDir: function () {
@@ -71,19 +77,24 @@ var app = new Vue({
             }
 
             setTimeout(function () {
-                var hashArr = getHashes(app.queue);
-
                 if (mode == 'Generate') {
+                    setAlgorithms();
+                    var hashArr = getHashes(app.queue);
+
                     saveJSON(hashArr, path.resolve(app.selectedDir, 'QuickFIV.json'));
+
                     swal.close();
                     swal({
-                        type: 'success',
                         showConfirmButton: false,
-                        text: 'QuickFIV file created!',
-                        customClass: 'swal2-modal-custom'
+                        type: 'success',
+                        footer: '<p style="color: #333">QuickFIV file created!</p>'
                     });
                 } else {
                     var verifyArr = readJSON(path.resolve(app.selectedDir, 'QuickFIV.json'));
+
+                    getAlgorithms(verifyArr);
+                    var hashArr = getHashes(app.queue);
+                    
                     verifyHashes(verifyArr);
                 }
             }, 100);
@@ -120,30 +131,43 @@ function getHashes(queue) {
 
     for (var i = 0; i < queue.length; i++) {
         console.log(queue[i].path);
-        var md5 = hashFiles.sync({
-            files: [queue[i].path],
-            algorithm: 'md5',
-            noGlob: true
-        });
-        console.log(md5);
-        var sha1 = hashFiles.sync({
-            files: [queue[i].path],
-            algorithm: 'sha1',
-            noGlob: true
-        });
-        console.log(sha1);
-        var sha256 = hashFiles.sync({
-            files: [queue[i].path],
-            algorithm: 'sha256',
-            noGlob: true
-        });
-        console.log(sha256);
-        var sha512 = hashFiles.sync({
-            files: [queue[i].path],
-            algorithm: 'sha512',
-            noGlob: true
-        });
-        console.log(sha512);
+
+        var md5 = '';
+        var sha1 = '';
+        var sha256 = '';
+        var sha512 = '';
+
+        if (app.algorithms.md5 == true) {
+            md5 = hashFiles.sync({
+                files: [queue[i].path],
+                algorithm: 'md5',
+                noGlob: true
+            });
+        }
+
+        if (app.algorithms.sha1 == true) {
+            sha1 = hashFiles.sync({
+                files: [queue[i].path],
+                algorithm: 'sha1',
+                noGlob: true
+            });
+        }
+
+        if (app.algorithms.sha256 == true) {
+            sha256 = hashFiles.sync({
+                files: [queue[i].path],
+                algorithm: 'sha256',
+                noGlob: true
+            });
+        }
+
+        if (app.algorithms.sha512 == true) {
+            sha512 = hashFiles.sync({
+                files: [queue[i].path],
+                algorithm: 'sha512',
+                noGlob: true
+            });
+        }
 
         hashes.push({
             file: queue[i].name,
@@ -232,5 +256,41 @@ function verifyHashes(arr) {
             type: 'warning',
             footer: '<p style="color: #333">Issue(s) detected!</p>'
         });
+    }
+}
+
+function setAlgorithms() {
+    if (app.checkedHashes.indexOf('md5') > -1) {
+        app.algorithms.md5 = true;
+    }
+
+    if (app.checkedHashes.indexOf('sha1') > -1) {
+        app.algorithms.sha1 = true;
+    }
+
+    if (app.checkedHashes.indexOf('sha256') > -1) {
+        app.algorithms.sha256 = true;
+    }
+
+    if (app.checkedHashes.indexOf('sha512') > -1) {
+        app.algorithms.sha512 = true;
+    }
+}
+
+function getAlgorithms(inputArr) {
+    if (inputArr[0].md5 != '') {
+        app.algorithms.md5 = true;
+    }
+
+    if (inputArr[0].sha1 != '') {
+        app.algorithms.sha1 = true;
+    }
+
+    if (inputArr[0].sha256 != '') {
+        app.algorithms.sha256 = true;
+    }
+
+    if (inputArr[0].sha512 != '') {
+        app.algorithms.sha512 = true;
     }
 }
