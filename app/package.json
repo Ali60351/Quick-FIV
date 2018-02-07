@@ -8,7 +8,15 @@
   },
   "license": "MIT",
   "main": "javascripts/main/index.js",
-  "dependencies": {},
+  "dependencies": {
+    "bozon": "^0.7.9",
+    "file": "^0.2.2",
+    "global": "^4.3.2",
+    "hash-files": "^1.1.1",
+    "jsonfile": "^4.0.0",
+    "sweetalert2": "^7.9.2",
+    "vue-devtools": "^3.1.9"
+  },
   "settings": {
     "width": 680,
     "height": 400,
