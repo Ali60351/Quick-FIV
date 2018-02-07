@@ -32,6 +32,13 @@ electron.app.on('ready', function() {
     window = null;
   });
 
+electron.app.on('window-all-closed', function () {
+  if (process.platform !== 'darwin') {
+    electron.app.quit()
+  }
+})
+
+
 });
 
 // electron.app.on('ready', () => {
