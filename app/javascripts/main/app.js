@@ -7,6 +7,7 @@ var hashFiles = require('hash-files');
 var jsonfile = require('jsonfile');
 var file = require('file');
 var swal = require('sweetalert2');
+var upath = require('upath');
 
 const {
     dialog
@@ -76,10 +77,12 @@ var app = new Vue({
                 });
             }
 
+            var hashArr = [];
+
             setTimeout(function () {
                 if (mode == 'Generate') {
                     setAlgorithms();
-                    var hashArr = getHashes(app.queue);
+                    hashArr = getHashes(app.queue);
 
                     saveJSON(hashArr, path.resolve(app.selectedDir, 'QuickFIV.json'));
 
@@ -93,7 +96,7 @@ var app = new Vue({
                     var verifyArr = readJSON(path.resolve(app.selectedDir, 'QuickFIV.json'));
 
                     getAlgorithms(verifyArr);
-                    var hashArr = getHashes(app.queue);
+                    hashArr = getHashes(app.queue);
                     
                     verifyHashes(verifyArr);
                 }
@@ -206,7 +209,7 @@ function verifyHashes(arr) {
         var index = -1;
 
         for (var j = 0; j < arr.length && index == -1; j++) {
-            if (app.queue[i].name == arr[j].file) {
+            if (upath.normalize(app.queue[i].name) == upath.normalize(arr[j].file)) {
                 index = j;
             }
         }
