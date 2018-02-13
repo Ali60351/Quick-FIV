@@ -19,6 +19,17 @@
     "win": {},
     "mac": {
       "category": "your.app.category.type"
+    },
+    "linux": {
+      "target": [
+      {
+        "target": "deb",
+        "arch": [
+          "x64"
+        ] 
+      }
+    ],
+      "category": "Utility"
     }
   },
   "dependencies": {
