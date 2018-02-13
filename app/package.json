@@ -9,13 +9,16 @@
   "license": "MIT",
   "main": "javascripts/main/index.js",
   "dependencies": {
-    "bozon": "^0.7.9",
     "file": "^0.2.2",
     "global": "^4.3.2",
     "hash-files": "^1.1.1",
     "jsonfile": "^4.0.0",
+    "lodash.endswith": "^4.2.1",
+    "lodash.isfunction": "^3.0.9",
+    "lodash.isstring": "^4.0.1",
+    "lodash.startswith": "^4.2.1",
     "sweetalert2": "^7.9.2",
-    "vue-devtools": "^3.1.9"
+    "upath": "^1.0.2"
   },
   "settings": {
     "width": 680,
