@@ -1,10 +1,10 @@
 {
   "name": "QuickFIV",
   "version": "0.1.0",
-  "description": "QuickFIV application built with Electron",
+  "description": "Tool to quickly verify file integrity in batches",
   "author": {
     "name": "Ali Nauman",
-    "email": ""
+    "email": "ali60351@gmail.com"
   },
   "license": "MIT",
   "main": "javascripts/main/index.js",
