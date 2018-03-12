@@ -8,6 +8,8 @@ var jsonfile = require('jsonfile');
 var file = require('file');
 var swal = require('sweetalert2');
 var upath = require('upath');
+var NodeRSA = require('node-rsa');
+var validator = require('is-my-json-valid');
 
 const {
     dialog
@@ -45,6 +47,13 @@ var app = new Vue({
 
             this.selectedDir = dir[0];
 
+            var files = getFiles(this.selectedDir);
+
+            if (files.length == 0) {
+                alert('This directory does not contains any files');
+                return;
+            }
+
             if (fs.existsSync(path.resolve(app.selectedDir, 'QuickFIV.json'))) {
                 mode = 'Verify';
                 swal({
@@ -63,8 +72,6 @@ var app = new Vue({
                 });
             }
 
-            var files = getFiles(this.selectedDir);
-
             for (var i = 0; i < files.length; i++) {
                 this.queue.push({
                     name: files[i].split(this.selectedDir)[1],
@@ -81,10 +88,52 @@ var app = new Vue({
 
             setTimeout(function () {
                 if (mode == 'Generate') {
+                    var secureFlag = confirm('Would you like to secure your hashes?');
                     setAlgorithms();
-                    hashArr = getHashes(app.queue);
 
-                    saveJSON(hashArr, path.resolve(app.selectedDir, 'QuickFIV.json'));
+                    if (secureFlag) {
+                        var keyExists = confirm('I you have a key pair already press OK. Press Cancel to generate a new key pair');
+                        var private = '';
+                        var public = '';
+
+                        if (keyExists) {
+                            var privatePath = dialog.showOpenDialog({
+                                title: "Select Your Private Key",
+                                properties: ["openFile"]
+                            });
+
+                            var publicPath = dialog.showOpenDialog({
+                                title: "Select Reciever's Public Key",
+                                properties: ["openFile"]
+                            });
+
+                            hashArr = getHashes(app.queue);
+                            encryptHash(hashArr, privatePath[0], publicPath[0]);
+                        } else {
+                            var privateFile = dialog.showSaveDialog({
+                                title: "Save Your Private Key",
+                                defaultPath: path.resolve('..','Private.qfv')
+                            });
+
+                            var publicFile = dialog.showSaveDialog({
+                                title: "Save Your Public Key",
+                                defaultPath: path.resolve('..','Public.qfv')
+                            });
+
+                            var publicFileE = dialog.showOpenDialog({
+                                title: "Select Reciever's Public Key",
+                                properties: ["openFile"]
+                            });
+
+                            generateKey(privateFile, publicFile);
+
+                            hashArr = getHashes(app.queue);
+                            encryptHash(hashArr, privateFile[0], publicFileE[0]);
+                        }                        
+                    } else {
+                        hashArr = getHashes(app.queue);
+                        saveJSON(hashArr, path.resolve(app.selectedDir, 'QuickFIV.json'));
+                    }
 
                     swal.close();
                     swal({
@@ -93,12 +142,35 @@ var app = new Vue({
                         footer: '<p style="color: #333">QuickFIV file created!</p>'
                     });
                 } else {
-                    var verifyArr = readJSON(path.resolve(app.selectedDir, 'QuickFIV.json'));
+                    var raw = fs.readFileSync(path.resolve(app.selectedDir, 'QuickFIV.json'));
 
-                    getAlgorithms(verifyArr);
-                    hashArr = getHashes(app.queue);
-                    
-                    verifyHashes(verifyArr);
+                    if (isValidJSON()) {
+                        var verifyArr = readJSON(path.resolve(app.selectedDir, 'QuickFIV.json'));
+                        getAlgorithms(verifyArr);
+                        hashArr = getHashes(app.queue);
+                        verifyHashes(verifyArr);
+                    } else {
+                        var decryptFlag = confirm('Hashes are either corrupted or encrypted. Continue to decrypt?');
+
+                        if (decryptFlag) {
+                            var privatePathD = dialog.showOpenDialog({
+                                title: "Select Your Private Key",
+                                properties: ["openFile"]
+                            });
+
+                            var publicPathD = dialog.showOpenDialog({
+                                title: "Select Sender's Public Key",
+                                properties: ["openFile"]
+                            });
+
+                            var verifyArrD = decryptHash(path.resolve(app.selectedDir, 'QuickFIV.json'), privatePathD[0], publicPathD[0]);
+                            getAlgorithms(verifyArrD);
+                            hashArr = getHashes(app.queue);
+                            verifyHashes(verifyArrD);
+                        } else {
+                            return;
+                        }
+                    }          
                 }
             }, 100);
         }
@@ -296,4 +368,98 @@ function getAlgorithms(inputArr) {
     if (inputArr[0].sha512 != '') {
         app.algorithms.sha512 = true;
     }
+}
+
+function encryptHash(hashArr, privatePath, publicPath) {
+    var public = fs.readFileSync(publicPath);
+    var private = fs.readFileSync(privatePath);
+
+    var privateKey = new NodeRSA();
+    var publicKey = new NodeRSA();
+
+    privateKey.importKey(private, "private");
+    publicKey.importKey(public, "public");
+
+    var enc = privateKey.encryptPrivate(hashArr);
+    enc = publicKey.encrypt(enc);
+
+    fs.writeFileSync(path.resolve(app.selectedDir, 'QuickFIV.json'), enc);
+}
+
+function decryptHash(hashPath, privatePath, publicPath) {
+    var public = fs.readFileSync(publicPath);
+    var private = fs.readFileSync(privatePath);
+
+    var privateKey = new NodeRSA();
+    var publicKey = new NodeRSA();
+
+    privateKey.importKey(private, "private");
+    publicKey.importKey(public, "public");
+
+    var data = fs.readFileSync(hashPath);
+
+    var dec = privateKey.decrypt(data);
+    dec = publicKey.decryptPublic(dec, 'json');
+
+    return dec;
+}
+
+function isValidJSON(data) {
+
+    var arr;
+
+    try {
+        arr = JSON.parse(data);
+    } catch (err) {
+        return false;
+    }
+
+    var schema = {
+        required: true,
+        type: 'object',
+        properties: {
+            file: {
+                required: true,
+                type: 'string'
+            },
+            md5: {
+                required: true,
+                type: 'string'
+            },
+            sha1: {
+                required: true,
+                type: 'string'
+            },
+            sha256: {
+                required: true,
+                type: 'string'
+            },
+            sha512: {
+                required: true,
+                type: 'string'
+            }
+        }
+    };
+    
+    var validate = validator(schema, {
+        verbose: true
+    });
+
+    for(var i = 0; i < arr.length; i++) {
+        if (!(validate(arr[i]))) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function generateKey(privatePath, publicPath) {
+    var key = new NodeRSA({b: 512});
+
+    var public = key.exportKey("public");
+    var private = key.exportKey("private");
+
+    fs.writeFileSync(publicPath, public);
+    fs.writeFileSync(privatePath, private);
 }
