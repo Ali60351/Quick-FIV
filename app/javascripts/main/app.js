@@ -128,7 +128,7 @@ var app = new Vue({
                             generateKey(privateFile, publicFile);
 
                             hashArr = getHashes(app.queue);
-                            encryptHash(hashArr, privateFile[0], publicFileE[0]);
+                            encryptHash(hashArr, privateFile, publicFileE[0]);
                         }                        
                     } else {
                         hashArr = getHashes(app.queue);
