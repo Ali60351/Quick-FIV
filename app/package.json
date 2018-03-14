@@ -20,7 +20,13 @@
     "lodash.startswith": "^4.2.1",
     "node-rsa": "^0.4.2",
     "sweetalert2": "^7.9.2",
-    "upath": "^1.0.2"
+    "upath": "^1.0.2",
+    "asn1": "^0.2.3",
+    "jsonpointer": "^4.0.1",
+    "generate-function": "^2.0.0",
+    "generate-object-property": "^1.2.0",
+    "is-my-ip-valid": "^1.0.0",
+    "is-property": "^1.0.2"
   },
   "settings": {
     "width": 680,
