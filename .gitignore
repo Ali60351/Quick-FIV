@@ -4,3 +4,5 @@ builds
 packages
 bower_components
 app/node_modules
+
+*.lock
