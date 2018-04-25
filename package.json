@@ -27,6 +27,18 @@
           "arch": [
             "x64"
           ]
+        },
+        {
+          "target": "tar.gz",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "pacman",
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "category": "Utility"
@@ -34,7 +46,7 @@
   },
   "dependencies": {
     "asn1": "^0.2.3",
-    "bozon": "^0.7.9",
+    "bozon": "^0.7.10",
     "crypto-js": "^3.1.9-1",
     "file": "^0.2.2",
     "generate-function": "^2.0.0",
