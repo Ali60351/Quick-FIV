@@ -9,6 +9,7 @@ var file = require('file');
 var upath = require('upath');
 var NodeRSA = require('node-rsa');
 var validator = require('is-my-json-valid');
+var CryptoJS = require("crypto-js");
 
 const {
   dialog
@@ -29,6 +30,7 @@ var app = new Vue({
     infoMessage: '',
     infoFlag: false,
     modeOfOperation: 'Unsecure',
+    symmetricPassword: '',
     items: [{
         icon: 'home',
         title: 'Home',
@@ -51,13 +53,8 @@ var app = new Vue({
     queue: [],
     selectedDir: 'Select Directory',
     mode: '',
-    checkedHashes: 'sha1',
-    algorithms: {
-      md5: false,
-      sha1: false,
-      sha256: false,
-      sha512: false
-    }
+    checkedHash: 'sha1',
+    algorithm: ''
   },
   methods: {
     selectDir: function() {
@@ -113,48 +110,41 @@ var app = new Vue({
       var hashArr = [];
 
       if (mode == 'Generate') {
+        this.algorithm = this.checkedHash;
+
         if (this.modeOfOperation === 'Unsecure') {
           hashArr = getHashes(app.queue);
           saveJSON(hashArr, path.resolve(app.selectedDir, 'QuickFIV.json'));
         } else if (this.modeOfOperation === 'twoPublic') {
-          var keyExists = confirm('I you have a key pair already press OK. Press Cancel to generate a new key pair');
           var private = '';
           var public = '';
 
-          if (keyExists) {
-            var privatePath = dialog.showOpenDialog({
-              title: "Select Your Private Key",
-              properties: ["openFile"]
-            });
+          var privatePath = dialog.showOpenDialog({
+            title: "Select Your Private Key",
+            properties: ["openFile"]
+          });
 
-            var publicPath = dialog.showOpenDialog({
-              title: "Select Reciever's Public Key",
-              properties: ["openFile"]
-            });
+          var publicPath = dialog.showOpenDialog({
+            title: "Select Reciever's Public Key",
+            properties: ["openFile"]
+          });
 
-            hashArr = getHashes(app.queue);
-            encryptHash(hashArr, privatePath[0], publicPath[0]);
-          } else {
-            var privateFile = dialog.showSaveDialog({
-              title: "Save Your Private Key",
-              defaultPath: path.resolve('..', 'Private.qfv')
-            });
+          hashArr = getHashes(app.queue);
+          encryptHashPublicDual(hashArr, privatePath[0], publicPath[0]);
+        } else if (this.modeOfOperation === 'onePublic') {
+          var private = '';
 
-            var publicFile = dialog.showSaveDialog({
-              title: "Save Your Public Key",
-              defaultPath: path.resolve('..', 'Public.qfv')
-            });
+          var privatePath = dialog.showOpenDialog({
+            title: "Select Your Private Key",
+            properties: ["openFile"]
+          });
 
-            var publicFileE = dialog.showOpenDialog({
-              title: "Select Reciever's Public Key",
-              properties: ["openFile"]
-            });
-
-            generateKey(privateFile, publicFile);
-
-            hashArr = getHashes(app.queue);
-            encryptHash(hashArr, privateFile, publicFileE[0]);
-          }
+          hashArr = getHashes(app.queue);
+          encryptHashPublicSingle(hashArr, privatePath[0]);
+        } else if (this.modeOfOperation === 'symmetric') {
+          hashArr = getHashes(app.queue);
+          // console.log(hashArr);
+          encryptHashSymmetric(hashArr);
         }
 
         app.infoFlag = false;
@@ -163,34 +153,64 @@ var app = new Vue({
       } else {
         var raw = fs.readFileSync(path.resolve(app.selectedDir, 'QuickFIV.json'));
 
-        if (isValidJSON(raw)) {
+        if (this.modeOfOperation === 'Unsecure') {
           var verifyArr = readJSON(path.resolve(app.selectedDir, 'QuickFIV.json'));
           getAlgorithms(verifyArr);
           hashArr = getHashes(app.queue);
           verifyHashes(verifyArr);
-        } else {
-          var decryptFlag = confirm('Hashes are either corrupted or encrypted. Continue to decrypt?');
+        } else if (this.modeOfOperation === 'twoPublic') {
+          var privatePathD = dialog.showOpenDialog({
+            title: "Select Your Private Key",
+            properties: ["openFile"]
+          });
 
-          if (decryptFlag) {
-            var privatePathD = dialog.showOpenDialog({
-              title: "Select Your Private Key",
-              properties: ["openFile"]
-            });
+          var publicPathD = dialog.showOpenDialog({
+            title: "Select Sender's Public Key",
+            properties: ["openFile"]
+          });
 
-            var publicPathD = dialog.showOpenDialog({
-              title: "Select Sender's Public Key",
-              properties: ["openFile"]
-            });
+          var verifyArrDecrypted = decryptHashPublicDual(path.resolve(app.selectedDir, 'QuickFIV.json'), privatePathD[0], publicPathD[0]);
+          getAlgorithms(verifyArrDecrypted);
+          hashArr = getHashes(app.queue);
+          verifyHashes(verifyArrDecrypted);
+        } else if (this.modeOfOperation === 'onePublic') {
+          var publicPathD = dialog.showOpenDialog({
+            title: "Select Sender's Public Key",
+            properties: ["openFile"]
+          });
 
-            var verifyArrD = decryptHash(path.resolve(app.selectedDir, 'QuickFIV.json'), privatePathD[0], publicPathD[0]);
-            getAlgorithms(verifyArrD);
-            hashArr = getHashes(app.queue);
-            verifyHashes(verifyArrD);
-          } else {
-            return;
-          }
+          var verifyArrDecrypted = decryptHashPublicSingle(path.resolve(app.selectedDir, 'QuickFIV.json'), publicPathD[0]);
+          getAlgorithms(verifyArrDecrypted);
+          hashArr = getHashes(app.queue);
+          verifyHashes(verifyArrDecrypted);
+        } else if (this.modeOfOperation === 'symmetric') {
+          var verifyArrDecrypted = decryptHashSymmetric(path.resolve(app.selectedDir, 'QuickFIV.json'));
+          getAlgorithms(verifyArrDecrypted);
+          hashArr = getHashes(app.queue);
+          verifyHashes(verifyArrDecrypted);
         }
       }
+    },
+    generateKey: function() {
+      var key = new NodeRSA({
+        b: 512
+      });
+
+      var privatePath = dialog.showSaveDialog({
+        title: "Save Your Private Key",
+        defaultPath: path.resolve('..', 'Private.qfv')
+      });
+
+      var publicPath = dialog.showSaveDialog({
+        title: "Save Your Public Key",
+        defaultPath: path.resolve('..', 'Public.qfv')
+      });
+
+      var public = key.exportKey("public");
+      var private = key.exportKey("private");
+
+      fs.writeFileSync(publicPath, public);
+      fs.writeFileSync(privatePath, private);
     }
   }
 });
@@ -230,7 +250,7 @@ function getHashes(queue) {
     var sha256 = '';
     var sha512 = '';
 
-    if (app.algorithms.md5 == true) {
+    if (app.algorithm === 'md5') {
       md5 = hashFiles.sync({
         files: [queue[i].path],
         algorithm: 'md5',
@@ -238,7 +258,7 @@ function getHashes(queue) {
       });
     }
 
-    if (app.algorithms.sha1 == true) {
+    if (app.algorithm === 'sha1') {
       sha1 = hashFiles.sync({
         files: [queue[i].path],
         algorithm: 'sha1',
@@ -246,7 +266,7 @@ function getHashes(queue) {
       });
     }
 
-    if (app.algorithms.sha256 == true) {
+    if (app.algorithm === 'sha256') {
       sha256 = hashFiles.sync({
         files: [queue[i].path],
         algorithm: 'sha256',
@@ -254,7 +274,7 @@ function getHashes(queue) {
       });
     }
 
-    if (app.algorithms.sha512 == true) {
+    if (app.algorithm === 'sha512') {
       sha512 = hashFiles.sync({
         files: [queue[i].path],
         algorithm: 'sha512',
@@ -346,43 +366,25 @@ function verifyHashes(arr) {
   }
 }
 
-function setAlgorithms() {
-  if (app.checkedHashes == 'md5') {
-    app.algorithms.md5 = true;
-  }
-
-  if (app.checkedHashes == 'sha1') {
-    app.algorithms.sha1 = true;
-  }
-
-  if (app.checkedHashes == 'sha256') {
-    app.algorithms.sha256 = true;
-  }
-
-  if (app.checkedHashes == 'sha512') {
-    app.algorithms.sha512 = true;
-  }
-}
-
 function getAlgorithms(inputArr) {
   if (inputArr[0].md5 != '') {
-    app.algorithms.md5 = true;
+    app.algorithm = 'md5';
   }
 
   if (inputArr[0].sha1 != '') {
-    app.algorithms.sha1 = true;
+    app.algorithm = 'sha1';
   }
 
   if (inputArr[0].sha256 != '') {
-    app.algorithms.sha256 = true;
+    app.algorithm = 'sha256';
   }
 
   if (inputArr[0].sha512 != '') {
-    app.algorithms.sha512 = true;
+    app.algorithm = 'sha512';
   }
 }
 
-function encryptHash(hashArr, privatePath, publicPath) {
+function encryptHashPublicDual(hashArr, privatePath, publicPath) {
   var public = fs.readFileSync(publicPath);
   var private = fs.readFileSync(privatePath);
 
@@ -398,7 +400,26 @@ function encryptHash(hashArr, privatePath, publicPath) {
   fs.writeFileSync(path.resolve(app.selectedDir, 'QuickFIV.json'), enc);
 }
 
-function decryptHash(hashPath, privatePath, publicPath) {
+function encryptHashPublicSingle(hashArr, privatePath) {
+  var private = fs.readFileSync(privatePath);
+
+  var privateKey = new NodeRSA();
+
+  privateKey.importKey(private, "private");
+
+  var enc = privateKey.encryptPrivate(hashArr);
+
+  fs.writeFileSync(path.resolve(app.selectedDir, 'QuickFIV.json'), enc);
+}
+
+function encryptHashSymmetric(hashArr) {
+  // console.log(hashArr);
+  // console.log(JSON.stringify(hashArr));
+  var enc = CryptoJS.AES.encrypt(JSON.stringify(hashArr), app.symmetricPassword);
+  fs.writeFileSync(path.resolve(app.selectedDir, 'QuickFIV.json'), enc);
+}
+
+function decryptHashPublicDual(hashPath, privatePath, publicPath) {
   var public = fs.readFileSync(publicPath);
   var private = fs.readFileSync(privatePath);
 
@@ -414,6 +435,30 @@ function decryptHash(hashPath, privatePath, publicPath) {
   dec = publicKey.decryptPublic(dec, 'json');
 
   return dec;
+}
+
+function decryptHashPublicSingle(hashPath, publicPath) {
+  var public = fs.readFileSync(publicPath);
+
+  var publicKey = new NodeRSA();
+
+  publicKey.importKey(public, "public");
+
+  var data = fs.readFileSync(hashPath);
+
+  var dec = publicKey.decryptPublic(data, 'json');
+
+  return dec;
+}
+
+function decryptHashSymmetric(hashPath) {
+  var data = fs.readFileSync(hashPath);
+  // console.log(data.toString());
+  // console.log(app.symmetricPassword);
+  var dec = CryptoJS.AES.decrypt(data.toString(), app.symmetricPassword);
+  // console.log(dec.toString(CryptoJS.enc.Utf8));
+  var decObj = JSON.parse(dec.toString(CryptoJS.enc.Utf8));
+  return decObj;
 }
 
 function isValidJSON(data) {
@@ -464,16 +509,4 @@ function isValidJSON(data) {
   }
 
   return true;
-}
-
-function generateKey(privatePath, publicPath) {
-  var key = new NodeRSA({
-    b: 512
-  });
-
-  var public = key.exportKey("public");
-  var private = key.exportKey("private");
-
-  fs.writeFileSync(publicPath, public);
-  fs.writeFileSync(privatePath, private);
 }

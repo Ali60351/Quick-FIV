@@ -40,6 +40,9 @@
             <v-flex xs2>
               <v-btn @click="selectDir" block primary>Select</v-btn>
             </v-flex>
+            <v-flex v-if="modeOfOperation === 'symmetric'" xs12>
+              <v-text-field v-model="symmetricPassword" label="Enter password"></v-text-field>
+            </v-flex>
           </v-layout>
           <v-layout row wrap text-xs-center>
             <v-flex xs12>
@@ -91,7 +94,7 @@
                 <v-radio label="Unsecure" value="Unsecure"></v-radio>
                 <v-radio label="Two way Public Key Cryptography" value="twoPublic"></v-radio>
                 <v-radio label="One way Public Key Cryptography" value="onePublic"></v-radio>
-                <v-radio label="Secret Key Cryptography" value="Secret"></v-radio>
+                <v-radio label="Secret Key Cryptography" value="symmetric"></v-radio>
               </v-radio-group>
             </v-flex>
           </v-layout>
@@ -99,7 +102,7 @@
             <v-flex xs12>
               <v-card-text class="display-1">Algorithm</v-card-text>
             </v-flex>
-            <v-radio-group v-model="checkedHashes" :mandatory="true" row>
+            <v-radio-group v-model="checkedHash" :mandatory="true" row>
               <v-flex xs6 md3>
                 <v-radio label="md5" value="md5"></v-radio>
               </v-flex>
@@ -113,6 +116,14 @@
                 <v-radio label="sha512" value="sha512"></v-radio>
               </v-flex>
             </v-radio-group>
+          </v-layout>
+          <v-layout row wrap text-xs-center>
+            <v-flex xs12>
+              <v-card-text class="display-1">Functions</v-card-text>
+            </v-flex>
+            <v-flex xs12>
+              <v-btn @click="generateKey" primary>Generate Public Key Pair</v-btn>
+            </v-flex>
           </v-layout>
         </v-container>
       </v-content>

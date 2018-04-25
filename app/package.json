@@ -10,6 +10,7 @@
   "main": "javascripts/main/index.js",
   "dependencies": {
     "asn1": "^0.2.3",
+    "crypto-js": "^3.1.9-1",
     "file": "^0.2.2",
     "generate-function": "^2.0.0",
     "generate-object-property": "^1.2.0",
