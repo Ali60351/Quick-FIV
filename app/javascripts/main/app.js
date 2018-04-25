@@ -85,14 +85,12 @@ var app = new Vue({
         return;
       }
 
-      if (fs.existsSync(path.resolve(app.selectedDir, 'QuickFIV.json'))) {
+      if (fs.existsSync(path.resolve(this.selectedDir, 'QuickFIV.json'))) {
         mode = 'Verify';
-        this.infoFlag = true;
-        this.infoMessage = 'QuickFIV hash exists. Starting verification. Please Wait.';
+        info('QuickFIV hash exists. Starting verification. Please Wait.');
       } else {
         mode = 'Generate';
-        this.infoFlag = true;
-        this.infoMessage = 'QuickFIV hash does not exists. Starting hash Generation. Please Wait';
+        info('QuickFIV hash does not exists. Starting hash Generation. Please Wait');
       }
 
       for (var i = 0; i < files.length; i++) {
@@ -109,87 +107,87 @@ var app = new Vue({
 
       var hashArr = [];
 
-      if (mode == 'Generate') {
-        this.algorithm = this.checkedHash;
+      setTimeout(function() {
+        if (mode == 'Generate') {
+          app.algorithm = app.checkedHash;
 
-        if (this.modeOfOperation === 'Unsecure') {
-          hashArr = getHashes(app.queue);
-          saveJSON(hashArr, path.resolve(app.selectedDir, 'QuickFIV.json'));
-        } else if (this.modeOfOperation === 'twoPublic') {
-          var private = '';
-          var public = '';
+          if (app.modeOfOperation === 'Unsecure') {
+            hashArr = getHashes(app.queue);
+            saveJSON(hashArr, path.resolve(app.selectedDir, 'QuickFIV.json'));
+          } else if (app.modeOfOperation === 'twoPublic') {
+            var private = '';
+            var public = '';
 
-          var privatePath = dialog.showOpenDialog({
-            title: "Select Your Private Key",
-            properties: ["openFile"]
-          });
+            var privatePath = dialog.showOpenDialog({
+              title: "Select Your Private Key",
+              properties: ["openFile"]
+            });
 
-          var publicPath = dialog.showOpenDialog({
-            title: "Select Reciever's Public Key",
-            properties: ["openFile"]
-          });
+            var publicPath = dialog.showOpenDialog({
+              title: "Select Reciever's Public Key",
+              properties: ["openFile"]
+            });
 
-          hashArr = getHashes(app.queue);
-          encryptHashPublicDual(hashArr, privatePath[0], publicPath[0]);
-        } else if (this.modeOfOperation === 'onePublic') {
-          var private = '';
+            hashArr = getHashes(app.queue);
+            encryptHashPublicDual(hashArr, privatePath[0], publicPath[0]);
+          } else if (app.modeOfOperation === 'onePublic') {
+            var private = '';
 
-          var privatePath = dialog.showOpenDialog({
-            title: "Select Your Private Key",
-            properties: ["openFile"]
-          });
+            var privatePath = dialog.showOpenDialog({
+              title: "Select Your Private Key",
+              properties: ["openFile"]
+            });
 
-          hashArr = getHashes(app.queue);
-          encryptHashPublicSingle(hashArr, privatePath[0]);
-        } else if (this.modeOfOperation === 'symmetric') {
-          hashArr = getHashes(app.queue);
-          // console.log(hashArr);
-          encryptHashSymmetric(hashArr);
+            hashArr = getHashes(app.queue);
+            encryptHashPublicSingle(hashArr, privatePath[0]);
+          } else if (app.modeOfOperation === 'symmetric') {
+            hashArr = getHashes(app.queue);
+            // console.log(hashArr);
+            encryptHashSymmetric(hashArr);
+          }
+
+          success('QuickFIV file created!');
+        } else {
+          var raw = fs.readFileSync(path.resolve(app.selectedDir, 'QuickFIV.json'));
+
+          if (app.modeOfOperation === 'Unsecure') {
+            var verifyArr = readJSON(path.resolve(app.selectedDir, 'QuickFIV.json'));
+            getAlgorithms(verifyArr);
+            hashArr = getHashes(app.queue);
+            verifyHashes(verifyArr);
+          } else if (app.modeOfOperation === 'twoPublic') {
+            var privatePathD = dialog.showOpenDialog({
+              title: "Select Your Private Key",
+              properties: ["openFile"]
+            });
+
+            var publicPathD = dialog.showOpenDialog({
+              title: "Select Sender's Public Key",
+              properties: ["openFile"]
+            });
+
+            var verifyArrDecrypted = decryptHashPublicDual(path.resolve(app.selectedDir, 'QuickFIV.json'), privatePathD[0], publicPathD[0]);
+            getAlgorithms(verifyArrDecrypted);
+            hashArr = getHashes(app.queue);
+            verifyHashes(verifyArrDecrypted);
+          } else if (app.modeOfOperation === 'onePublic') {
+            var publicPathD = dialog.showOpenDialog({
+              title: "Select Sender's Public Key",
+              properties: ["openFile"]
+            });
+
+            var verifyArrDecrypted = decryptHashPublicSingle(path.resolve(app.selectedDir, 'QuickFIV.json'), publicPathD[0]);
+            getAlgorithms(verifyArrDecrypted);
+            hashArr = getHashes(app.queue);
+            verifyHashes(verifyArrDecrypted);
+          } else if (app.modeOfOperation === 'symmetric') {
+            var verifyArrDecrypted = decryptHashSymmetric(path.resolve(app.selectedDir, 'QuickFIV.json'));
+            getAlgorithms(verifyArrDecrypted);
+            hashArr = getHashes(app.queue);
+            verifyHashes(verifyArrDecrypted);
+          }
         }
-
-        app.infoFlag = false;
-        app.successFlag = true;
-        app.successMessage = 'QuickFIV file created!';
-      } else {
-        var raw = fs.readFileSync(path.resolve(app.selectedDir, 'QuickFIV.json'));
-
-        if (this.modeOfOperation === 'Unsecure') {
-          var verifyArr = readJSON(path.resolve(app.selectedDir, 'QuickFIV.json'));
-          getAlgorithms(verifyArr);
-          hashArr = getHashes(app.queue);
-          verifyHashes(verifyArr);
-        } else if (this.modeOfOperation === 'twoPublic') {
-          var privatePathD = dialog.showOpenDialog({
-            title: "Select Your Private Key",
-            properties: ["openFile"]
-          });
-
-          var publicPathD = dialog.showOpenDialog({
-            title: "Select Sender's Public Key",
-            properties: ["openFile"]
-          });
-
-          var verifyArrDecrypted = decryptHashPublicDual(path.resolve(app.selectedDir, 'QuickFIV.json'), privatePathD[0], publicPathD[0]);
-          getAlgorithms(verifyArrDecrypted);
-          hashArr = getHashes(app.queue);
-          verifyHashes(verifyArrDecrypted);
-        } else if (this.modeOfOperation === 'onePublic') {
-          var publicPathD = dialog.showOpenDialog({
-            title: "Select Sender's Public Key",
-            properties: ["openFile"]
-          });
-
-          var verifyArrDecrypted = decryptHashPublicSingle(path.resolve(app.selectedDir, 'QuickFIV.json'), publicPathD[0]);
-          getAlgorithms(verifyArrDecrypted);
-          hashArr = getHashes(app.queue);
-          verifyHashes(verifyArrDecrypted);
-        } else if (this.modeOfOperation === 'symmetric') {
-          var verifyArrDecrypted = decryptHashSymmetric(path.resolve(app.selectedDir, 'QuickFIV.json'));
-          getAlgorithms(verifyArrDecrypted);
-          hashArr = getHashes(app.queue);
-          verifyHashes(verifyArrDecrypted);
-        }
-      }
+      }, 1000)
     },
     generateKey: function() {
       var key = new NodeRSA({
@@ -214,6 +212,27 @@ var app = new Vue({
     }
   }
 });
+
+function info(str) {
+  app.errorFlag = false;
+  app.successFlag = false;
+  app.infoFlag = true;
+  app.infoMessage = str;
+}
+
+function success(str) {
+  app.errorFlag = false;
+  app.infoFlag = false;
+  app.successFlag = true;
+  app.successMessage = str;
+}
+
+function error(str) {
+  app.successFlag = false;
+  app.infoFlag = false;
+  app.errorFlag = true;
+  app.errorMessage = str;
+}
 
 function getFiles(selection) {
   var directories = [];
@@ -356,13 +375,9 @@ function verifyHashes(arr) {
   }
 
   if (perfectFlag) {
-    app.infoFlag = false;
-    app.successFlag = true;
-    app.successMessage = "All files OK!";
+    success('All files OK!');
   } else {
-    app.infoFlag = false;
-    app.errorFlag = true;
-    app.errorMessage = 'Issue(s) detected!';
+    error('Issue(s) detected!');
   }
 }
 
