@@ -112,94 +112,85 @@ var app = new Vue({
 
       var hashArr = [];
 
-      setTimeout(function() {
-        if (mode == 'Generate') {
-          var secureFlag = confirm('Would you like to secure your hashes?');
-          setAlgorithms();
+      if (mode == 'Generate') {
+        if (this.modeOfOperation === 'Unsecure') {
+          hashArr = getHashes(app.queue);
+          saveJSON(hashArr, path.resolve(app.selectedDir, 'QuickFIV.json'));
+        } else if (this.modeOfOperation === 'twoPublic') {
+          var keyExists = confirm('I you have a key pair already press OK. Press Cancel to generate a new key pair');
+          var private = '';
+          var public = '';
 
-          if (secureFlag) {
-            var keyExists = confirm('I you have a key pair already press OK. Press Cancel to generate a new key pair');
-            var private = '';
-            var public = '';
+          if (keyExists) {
+            var privatePath = dialog.showOpenDialog({
+              title: "Select Your Private Key",
+              properties: ["openFile"]
+            });
 
-            if (keyExists) {
-              var privatePath = dialog.showOpenDialog({
-                title: "Select Your Private Key",
-                properties: ["openFile"]
-              });
+            var publicPath = dialog.showOpenDialog({
+              title: "Select Reciever's Public Key",
+              properties: ["openFile"]
+            });
 
-              var publicPath = dialog.showOpenDialog({
-                title: "Select Reciever's Public Key",
-                properties: ["openFile"]
-              });
-
-              hashArr = getHashes(app.queue);
-              encryptHash(hashArr, privatePath[0], publicPath[0]);
-            } else {
-              var privateFile = dialog.showSaveDialog({
-                title: "Save Your Private Key",
-                defaultPath: path.resolve('..', 'Private.qfv')
-              });
-
-              var publicFile = dialog.showSaveDialog({
-                title: "Save Your Public Key",
-                defaultPath: path.resolve('..', 'Public.qfv')
-              });
-
-              var publicFileE = dialog.showOpenDialog({
-                title: "Select Reciever's Public Key",
-                properties: ["openFile"]
-              });
-
-              generateKey(privateFile, publicFile);
-
-              hashArr = getHashes(app.queue);
-              encryptHash(hashArr, privateFile, publicFileE[0]);
-            }
-          }
-          else
-          {
             hashArr = getHashes(app.queue);
-            saveJSON(hashArr, path.resolve(app.selectedDir, 'QuickFIV.json'));
-          }
-
-          app.infoFlag = false;
-          app.successFlag = true;
-          app.successMessage = 'QuickFIV file created!';
-        }
-        else
-        {
-          var raw = fs.readFileSync(path.resolve(app.selectedDir, 'QuickFIV.json'));
-
-          if (isValidJSON(raw)) {
-            var verifyArr = readJSON(path.resolve(app.selectedDir, 'QuickFIV.json'));
-            getAlgorithms(verifyArr);
-            hashArr = getHashes(app.queue);
-            verifyHashes(verifyArr);
+            encryptHash(hashArr, privatePath[0], publicPath[0]);
           } else {
-            var decryptFlag = confirm('Hashes are either corrupted or encrypted. Continue to decrypt?');
+            var privateFile = dialog.showSaveDialog({
+              title: "Save Your Private Key",
+              defaultPath: path.resolve('..', 'Private.qfv')
+            });
 
-            if (decryptFlag) {
-              var privatePathD = dialog.showOpenDialog({
-                title: "Select Your Private Key",
-                properties: ["openFile"]
-              });
+            var publicFile = dialog.showSaveDialog({
+              title: "Save Your Public Key",
+              defaultPath: path.resolve('..', 'Public.qfv')
+            });
 
-              var publicPathD = dialog.showOpenDialog({
-                title: "Select Sender's Public Key",
-                properties: ["openFile"]
-              });
+            var publicFileE = dialog.showOpenDialog({
+              title: "Select Reciever's Public Key",
+              properties: ["openFile"]
+            });
 
-              var verifyArrD = decryptHash(path.resolve(app.selectedDir, 'QuickFIV.json'), privatePathD[0], publicPathD[0]);
-              getAlgorithms(verifyArrD);
-              hashArr = getHashes(app.queue);
-              verifyHashes(verifyArrD);
-            } else {
-              return;
-            }
+            generateKey(privateFile, publicFile);
+
+            hashArr = getHashes(app.queue);
+            encryptHash(hashArr, privateFile, publicFileE[0]);
           }
         }
-      }, 100);
+
+        app.infoFlag = false;
+        app.successFlag = true;
+        app.successMessage = 'QuickFIV file created!';
+      } else {
+        var raw = fs.readFileSync(path.resolve(app.selectedDir, 'QuickFIV.json'));
+
+        if (isValidJSON(raw)) {
+          var verifyArr = readJSON(path.resolve(app.selectedDir, 'QuickFIV.json'));
+          getAlgorithms(verifyArr);
+          hashArr = getHashes(app.queue);
+          verifyHashes(verifyArr);
+        } else {
+          var decryptFlag = confirm('Hashes are either corrupted or encrypted. Continue to decrypt?');
+
+          if (decryptFlag) {
+            var privatePathD = dialog.showOpenDialog({
+              title: "Select Your Private Key",
+              properties: ["openFile"]
+            });
+
+            var publicPathD = dialog.showOpenDialog({
+              title: "Select Sender's Public Key",
+              properties: ["openFile"]
+            });
+
+            var verifyArrD = decryptHash(path.resolve(app.selectedDir, 'QuickFIV.json'), privatePathD[0], publicPathD[0]);
+            getAlgorithms(verifyArrD);
+            hashArr = getHashes(app.queue);
+            verifyHashes(verifyArrD);
+          } else {
+            return;
+          }
+        }
+      }
     }
   }
 });
@@ -232,7 +223,7 @@ function getHashes(queue) {
   var hashes = [];
 
   for (var i = 0; i < queue.length; i++) {
-    console.log(queue[i].path);
+    // console.log(queue[i].path);
 
     var md5 = '';
     var sha1 = '';
