@@ -6,3 +6,5 @@ bower_components
 app/node_modules
 
 *.lock
+
+yarn-error\.log

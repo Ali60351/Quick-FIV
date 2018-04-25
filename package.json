@@ -50,7 +50,6 @@
     "lodash.isstring": "^4.0.1",
     "lodash.startswith": "^4.2.1",
     "node-rsa": "^0.4.2",
-    "sweetalert2": "^7.9.2",
     "upath": "^1.0.2",
     "vue-devtools": "^3.1.9"
   }

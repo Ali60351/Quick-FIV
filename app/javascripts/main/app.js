@@ -6,7 +6,6 @@ var path = require('path');
 var hashFiles = require('hash-files');
 var jsonfile = require('jsonfile');
 var file = require('file');
-var swal = require('sweetalert2');
 var upath = require('upath');
 var NodeRSA = require('node-rsa');
 var validator = require('is-my-json-valid');
@@ -27,6 +26,8 @@ var app = new Vue({
     successFlag: false,
     errorMessage: '',
     errorFlag: false,
+    infoMessage: '',
+    infoFlag: false,
     items: [{
         icon: 'home',
         title: 'Home',
@@ -62,6 +63,10 @@ var app = new Vue({
 
       var SelectFolder;
 
+      this.infoFlag = false;
+      this.errorFlag = false;
+      this.successFlag = false;
+
       var dir = dialog.showOpenDialog({
         title: "Select a folder",
         properties: ["openDirectory"]
@@ -84,20 +89,12 @@ var app = new Vue({
 
       if (fs.existsSync(path.resolve(app.selectedDir, 'QuickFIV.json'))) {
         mode = 'Verify';
-        swal({
-          showConfirmButton: false,
-          animation: false,
-          text: 'QuickFIV hash exists. Starting verification. Please Wait.',
-          customClass: 'swal2-modal-custom'
-        });
+        this.infoFlag = true;
+        this.infoMessage = 'QuickFIV hash exists. Starting verification. Please Wait.';
       } else {
         mode = 'Generate';
-        swal({
-          showConfirmButton: false,
-          animation: false,
-          text: 'QuickFIV hash does not exists. Starting hash Generation. Please Wait',
-          customClass: 'swal2-modal-custom'
-        });
+        this.infoFlag = true;
+        this.infoMessage = 'QuickFIV hash does not exists. Starting hash Generation. Please Wait';
       }
 
       for (var i = 0; i < files.length; i++) {
@@ -158,18 +155,19 @@ var app = new Vue({
               hashArr = getHashes(app.queue);
               encryptHash(hashArr, privateFile, publicFileE[0]);
             }
-          } else {
+          }
+          else
+          {
             hashArr = getHashes(app.queue);
             saveJSON(hashArr, path.resolve(app.selectedDir, 'QuickFIV.json'));
           }
 
-          swal.close();
-          swal({
-            showConfirmButton: false,
-            type: 'success',
-            footer: '<p style="color: #333">QuickFIV file created!</p>'
-          });
-        } else {
+          app.infoFlag = false;
+          app.successFlag = true;
+          app.successMessage = 'QuickFIV file created!';
+        }
+        else
+        {
           var raw = fs.readFileSync(path.resolve(app.selectedDir, 'QuickFIV.json'));
 
           if (isValidJSON(raw)) {
@@ -345,22 +343,14 @@ function verifyHashes(arr) {
     }
   }
 
-  swal.close();
-
   if (perfectFlag) {
+    app.infoFlag = false;
     app.successFlag = true;
     app.successMessage = "All files OK!";
-    swal({
-      showConfirmButton: false,
-      type: 'success',
-      footer: '<p style="color: #333">All files OK!</p>'
-    });
   } else {
-    swal({
-      showConfirmButton: false,
-      type: 'warning',
-      footer: '<p style="color: #333">Issue(s) detected!</p>'
-    });
+    app.infoFlag = false;
+    app.errorFlag = true;
+    app.errorMessage = 'Issue(s) detected!';
   }
 }
 
