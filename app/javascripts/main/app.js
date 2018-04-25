@@ -28,6 +28,7 @@ var app = new Vue({
     errorFlag: false,
     infoMessage: '',
     infoFlag: false,
+    modeOfOperation: 'Unsecure',
     items: [{
         icon: 'home',
         title: 'Home',
@@ -50,7 +51,7 @@ var app = new Vue({
     queue: [],
     selectedDir: 'Select Directory',
     mode: '',
-    checkedHashes: ['sha1'],
+    checkedHashes: 'sha1',
     algorithms: {
       md5: false,
       sha1: false,
@@ -355,19 +356,19 @@ function verifyHashes(arr) {
 }
 
 function setAlgorithms() {
-  if (app.checkedHashes.indexOf('md5') > -1) {
+  if (app.checkedHashes == 'md5') {
     app.algorithms.md5 = true;
   }
 
-  if (app.checkedHashes.indexOf('sha1') > -1) {
+  if (app.checkedHashes == 'sha1') {
     app.algorithms.sha1 = true;
   }
 
-  if (app.checkedHashes.indexOf('sha256') > -1) {
+  if (app.checkedHashes == 'sha256') {
     app.algorithms.sha256 = true;
   }
 
-  if (app.checkedHashes.indexOf('sha512') > -1) {
+  if (app.checkedHashes == 'sha512') {
     app.algorithms.sha512 = true;
   }
 }
