@@ -31,6 +31,7 @@ var app = new Vue({
     infoFlag: false,
     modeOfOperation: 'Unsecure',
     symmetricPassword: '',
+    visibility: true,
     items: [{
         icon: 'home',
         title: 'Home',
@@ -81,7 +82,7 @@ var app = new Vue({
       var files = getFiles(this.selectedDir);
 
       if (files.length == 0) {
-        alert('This directory does not contains any files');
+        error('This directory does not contains any files');
         return;
       }
 
@@ -129,6 +130,16 @@ var app = new Vue({
                 properties: ["openFile"]
               });
 
+              if (privatePath == null) {
+                error('No private key selected');
+                return;
+              }
+
+              if (publicPath == null) {
+                error('No public key selected');
+                return;
+              }
+
               hashArr = getHashes(app.queue);
               encryptHashPublicDual(hashArr, privatePath[0], publicPath[0]);
             } else if (app.modeOfOperation === 'onePublic') {
@@ -139,11 +150,20 @@ var app = new Vue({
                 properties: ["openFile"]
               });
 
+              if (privatePath == null) {
+                error('No private key selected');
+                return;
+              }
+
               hashArr = getHashes(app.queue);
               encryptHashPublicSingle(hashArr, privatePath[0]);
             } else if (app.modeOfOperation === 'symmetric') {
+              if (app.symmetricPassword === '') {
+                error('No password selected. Please type password before selecting directory');
+                return;
+              }
+
               hashArr = getHashes(app.queue);
-              // console.log(hashArr);
               encryptHashSymmetric(hashArr);
             }
 
@@ -167,6 +187,16 @@ var app = new Vue({
                 properties: ["openFile"]
               });
 
+              if (privatePathD == null) {
+                error('No private key selected');
+                return;
+              }
+
+              if (publicPathD == null) {
+                error('No public key selected');
+                return;
+              }
+
               var verifyArrDecrypted = decryptHashPublicDual(path.resolve(app.selectedDir, 'QuickFIV.json'), privatePathD[0], publicPathD[0]);
               getAlgorithms(verifyArrDecrypted);
               hashArr = getHashes(app.queue);
@@ -177,11 +207,21 @@ var app = new Vue({
                 properties: ["openFile"]
               });
 
+              if (publicPathD == null) {
+                error('No public key selected');
+                return;
+              }
+
               var verifyArrDecrypted = decryptHashPublicSingle(path.resolve(app.selectedDir, 'QuickFIV.json'), publicPathD[0]);
               getAlgorithms(verifyArrDecrypted);
               hashArr = getHashes(app.queue);
               verifyHashes(verifyArrDecrypted);
             } else if (app.modeOfOperation === 'symmetric') {
+              if (app.symmetricPassword === '') {
+                error('No password selected. Please type password before selecting directory');
+                return;
+              }
+
               var verifyArrDecrypted = decryptHashSymmetric(path.resolve(app.selectedDir, 'QuickFIV.json'));
               getAlgorithms(verifyArrDecrypted);
               hashArr = getHashes(app.queue);
@@ -189,7 +229,6 @@ var app = new Vue({
             }
           }
         } catch (err) {
-          // console.log(err);
           error(err.toString());
         }
       }, 1000)
@@ -208,6 +247,14 @@ var app = new Vue({
         title: "Save Your Public Key",
         defaultPath: path.resolve('..', 'Public.qfv')
       });
+
+      if (privatePath == null || publicPath == null)
+      {
+        alert('Invalid Location');
+        return;
+      }
+
+      console.log(privatePath);
 
       var public = key.exportKey("public");
       var private = key.exportKey("private");

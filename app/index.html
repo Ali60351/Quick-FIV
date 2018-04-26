@@ -41,7 +41,7 @@
               <v-btn @click="selectDir" block primary>Select</v-btn>
             </v-flex>
             <v-flex v-if="modeOfOperation === 'symmetric'" xs12>
-              <v-text-field v-model="symmetricPassword" label="Enter password"></v-text-field>
+              <v-text-field  :append-icon="visibility ? 'visibility' : 'visibility_off'" v-model="symmetricPassword" :append-icon-cb="() => (visibility = !visibility)" :type="visibility ? 'password' : 'text'" label="Enter password"></v-text-field>
             </v-flex>
           </v-layout>
           <v-layout row wrap text-xs-center>

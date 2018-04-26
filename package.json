@@ -8,7 +8,7 @@
   },
   "devDependencies": {
     "electron": "^1.8.4",
-    "electron-builder": "^19.48.2",
+    "electron-builder": "^20.10.0",
     "gulp": "^3.9.1",
     "mocha": "^4.0.1",
     "spectron": "^3.7.2",
