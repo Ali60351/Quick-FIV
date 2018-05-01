@@ -5,7 +5,7 @@ cache:
   - node_modules
   - app\node_modules
   - '%USERPROFILE%\.electron'
-  - '%LOCALAPPDATA%\\Yarn'
+  - '%LOCALAPPDATA%\Yarn'
 
 init:
   - git config --global core.autocrlf input
@@ -20,5 +20,9 @@ build_script:
   - node --version
   - yarn --version
   - yarn bozon package windows
+
+artifacts:
+  - path: 'packages\*.exe'
+    name: Quick-FIV
 
 test: off
