@@ -6,6 +6,7 @@ cache:
   - app\node_modules
   - '%USERPROFILE%\.electron'
   - '%LOCALAPPDATA%\Yarn'
+  - '%LOCALAPPDATA%\electron-builder\cache'
 
 init:
   - git config --global core.autocrlf input

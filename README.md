@@ -1,4 +1,4 @@
-# QuickFIV
+# QuickFIV [![Build status](https://ci.appveyor.com/api/projects/status/g3b9gb2bh8b6mec8?svg=true)](https://ci.appveyor.com/project/Ali60351/quick-fiv)
 
 > My QuickFIV app built with Electron
 
