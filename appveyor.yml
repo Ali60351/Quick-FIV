@@ -1,0 +1,24 @@
+platform:
+  - x64
+
+cache:
+  - node_modules
+  - app\node_modules
+  - '%USERPROFILE%\.electron'
+  - '%LOCALAPPDATA%\\Yarn'
+
+init:
+  - git config --global core.autocrlf input
+
+install:
+  - ps: Install-Product node 9 x64
+  - git reset --hard HEAD
+  - yarn add bozon
+  - yarn
+
+build_script:
+  - node --version
+  - yarn --version
+  - yarn bozon package windows
+
+test: off
